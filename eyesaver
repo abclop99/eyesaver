@@ -62,7 +62,7 @@ test -z $(which perl) && echo "perl needs to be installed"
 
 
 # get sunrise and sunset into bash string array
-times=($(sunwait -p ${LAT}N ${LONG}W | grep 'Civil twilight' | grep -o -E '[0-9]+'))
+times=($(sunwait report ${LAT}N ${LONG}E | grep 'Civil twilight' | sed 's/://g' | grep -o -E '[0-9]+'))
 
 # remove leading zeros so number not interpreted as octal
 # and convert minutes into decimal
@@ -86,27 +86,30 @@ echo "Setting brightness to $brightness."
 echo "Setting colour temperature to $temp (RGB $red $green $blue)."
 
 # detect monitors and get I2C bus number
-for monitor in $(ddcutil detect --terse | grep I2C | sed -e 's/.*-//'); do
+for monitor in $(sudo ddcutil detect --terse | grep I2C | sed -e 's/.*-//'); do
 
     echo "Using i2c bus ${monitor}."
 
-    ddcutil -b ${monitor} setvcp 12 $CONTRAST
-    ddcutil -b ${monitor} setvcp 10 $brightness
+    sudo ddcutil -b ${monitor} setvcp 12 $CONTRAST
+    sudo ddcutil -b ${monitor} setvcp 10 $brightness
 
     # unfortunately some take 0-100 and some 0-255 for RGB
     # so we must scale to monitor's native scale
-    max=$(ddcutil -b ${monitor} -t getvcp 16 | cut -d ' ' -f 5)
+    max=$(sudo ddcutil -b ${monitor} -t getvcp 16 | cut -d ' ' -f 5)
 
     # apply colour temperature
-    ddcutil --async -b ${monitor} setvcp 16 $(($red * $max / 255))
-    ddcutil --async -b ${monitor} setvcp 18 $(($green * $max / 255))
-    ddcutil --async -b ${monitor} setvcp 1a $(($blue * $max / 255))
+    sudo ddcutil --async -b ${monitor} setvcp 16 $(($red * $max / 255))
+    sudo ddcutil --async -b ${monitor} setvcp 18 $(($green * $max / 255))
+    sudo ddcutil --async -b ${monitor} setvcp 1a $(($blue * $max / 255))
 
     if [ "$DEBUG" = true ] ; then
 	    # debugging / validation
-	    ddcutil --async -b ${monitor} getvcp 16
-	    ddcutil --async -b ${monitor} getvcp 18
-	    ddcutil --async -b ${monitor} getvcp 1a
+	    echo "Printing debug info"
+	    sudo ddcutil --async -b ${monitor} getvcp 10
+	    sudo ddcutil --async -b ${monitor} getvcp 12
+	    sudo ddcutil --async -b ${monitor} getvcp 16
+	    sudo ddcutil --async -b ${monitor} getvcp 18
+	    sudo ddcutil --async -b ${monitor} getvcp 1a
     fi
 
 done
