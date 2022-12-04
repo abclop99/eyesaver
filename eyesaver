@@ -30,27 +30,27 @@
 #### USER-SET VARIABLES ####
 
 # your location
-LAT=53.3833
-LONG=1.4667
+LAT=33.0
+LONG=-117.1
 
 # slope of the sigmoid function;
 # higher values means smoother transition between day and night values
-SMOOTHNESS=100
+SMOOTHNESS=80
 
 # brightness floor and ceiling
 FLOOR=30
-CEIL=50
+CEIL=100
 
 # colour temperatures in K
-TEMP_FLOOR=4500
+TEMP_FLOOR=2700
 TEMP_CEIL=6600
 
 # fraction of RGB value to be considered normally full
-RGB_SCALING=0.7
+RGB_SCALING=0.9
 
 CONTRAST=50
 
-DEBUG=false
+DEBUG=true
 
 #### END USER-SET VARIABLES ####
 
