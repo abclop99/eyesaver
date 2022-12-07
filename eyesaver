@@ -52,6 +52,9 @@ CONTRAST=50
 
 DEBUG=true
 
+# Number of retries for some `ddcutil` commands
+MAX_RETRIES=5
+
 #### END USER-SET VARIABLES ####
 
 # test for dependencies
@@ -95,21 +98,54 @@ for monitor in $(sudo ddcutil detect --terse | grep I2C | sed -e 's/.*-//'); do
 
     # unfortunately some take 0-100 and some 0-255 for RGB
     # so we must scale to monitor's native scale
-    max=$(sudo ddcutil -b ${monitor} -t getvcp 16 | cut -d ' ' -f 5)
+    # Sometimes, the command fails, so retry a maximum of $MAX_RETRIES times.
+    max=
+    retries=0
+    re='^[0-9]+$' # Regular expression to test if max is a number
+    while [[ ! "$max" =~ $re ]] && [ "$retries" -lt "$MAX_RETRIES" ]
+	do
+	max=$(sudo ddcutil -b ${monitor} -t getvcp 16 | cut -d ' ' -f 5)
+
+	if [[ ! "$max" =~ $re ]]
+	then
+	    echo Error: failed to get max from ddcutil. $retries/$MAX_RETRIES retries. >&2
+	    retries=$((retries+1))
+
+	    if [ "$retries" -eq "$MAX_RETRIES" ]
+	    then
+		echo Error: maximum retries \($MAX_RETRIES\) exceeded. Aborting. >&2
+		exit 1
+	    fi
+	fi
+    done
+
+    # Set the target scaled rgb values
+    red_scaled=$(($red * $max / 255))
+    green_scaled=$(($green * $max / 255))
+    blue_scaled=$(($blue * $max / 255))
+
+    if [ "$DEBUG" = true ] ; then
+	echo Now: $'\t'$now >&2
+	echo Max: $'\t'$max >&2
+	echo "Printing target values" >&2
+	echo Red: $'\t'$red_scaled >&2
+	echo Green: $'\t'$green_scaled >&2
+	echo Blue: $'\t'$blue_scaled >&2
+    fi
 
     # apply colour temperature
-    sudo ddcutil --async -b ${monitor} setvcp 16 $(($red * $max / 255))
-    sudo ddcutil --async -b ${monitor} setvcp 18 $(($green * $max / 255))
-    sudo ddcutil --async -b ${monitor} setvcp 1a $(($blue * $max / 255))
+    sudo ddcutil --async -b ${monitor} setvcp 16 $(($red * $max / 255)) >&2
+    sudo ddcutil --async -b ${monitor} setvcp 18 $(($green * $max / 255)) >&2
+    sudo ddcutil --async -b ${monitor} setvcp 1a $(($blue * $max / 255)) >&2
 
     if [ "$DEBUG" = true ] ; then
 	    # debugging / validation
 	    echo "Printing debug info"
-	    sudo ddcutil --async -b ${monitor} getvcp 10
-	    sudo ddcutil --async -b ${monitor} getvcp 12
-	    sudo ddcutil --async -b ${monitor} getvcp 16
-	    sudo ddcutil --async -b ${monitor} getvcp 18
-	    sudo ddcutil --async -b ${monitor} getvcp 1a
+	    sudo ddcutil --async -b ${monitor} getvcp 10 >&2
+	    sudo ddcutil --async -b ${monitor} getvcp 12 >&2
+	    sudo ddcutil --async -b ${monitor} getvcp 16 >&2
+	    sudo ddcutil --async -b ${monitor} getvcp 18 >&2
+	    sudo ddcutil --async -b ${monitor} getvcp 1a >&2
     fi
 
 done
