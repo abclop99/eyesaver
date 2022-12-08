@@ -27,11 +27,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#### Get script location ####
+
+SOURCE=${BASH_SOURCE[0]}
+while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+  SOURCE=$(readlink "$SOURCE")
+  [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+
 #### Config file ####
 
 known_variables="LAT LONG SMOOTHNESS FLOOR CEIL TEMP_FLOOR TEMP_CEIL RGB_SCALING CONTRAST DEBUG MAX_RETRIES"
 
-source read_config.sh config "$known_variables"
+source $DIR/read_config.sh $DIR/config "$known_variables"
 
 #### End Config file ####
 
