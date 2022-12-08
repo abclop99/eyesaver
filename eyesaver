@@ -27,35 +27,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#### USER-SET VARIABLES ####
+#### Config file ####
 
-# your location
-LAT=33.0
-LONG=-117.1
+known_variables="LAT LONG SMOOTHNESS FLOOR CEIL TEMP_FLOOR TEMP_CEIL RGB_SCALING CONTRAST DEBUG MAX_RETRIES"
 
-# slope of the sigmoid function;
-# higher values means smoother transition between day and night values
-SMOOTHNESS=80
+source read_config.sh config "$known_variables"
 
-# brightness floor and ceiling
-FLOOR=30
-CEIL=100
-
-# colour temperatures in K
-TEMP_FLOOR=2700
-TEMP_CEIL=6600
-
-# fraction of RGB value to be considered normally full
-RGB_SCALING=0.9
-
-CONTRAST=50
-
-DEBUG=true
-
-# Number of retries for some `ddcutil` commands
-MAX_RETRIES=5
-
-#### END USER-SET VARIABLES ####
+#### End Config file ####
 
 # test for dependencies
 test -z $(which ddcutil) && echo "ddcutil needs to be installed"

@@ -1,0 +1,34 @@
+#######################################
+# Config file for eyesaver 
+#
+# Sets variables for configuration.
+#######################################
+
+# Prints debug info if true.
+# Getting info using ddcutil to print is slow.
+DEBUG=false
+
+LAT=33.0
+LONG=-117.1
+
+# Slope of the sigmoid function;
+# Higher values mean a smoother transition between day and night values.
+SMOOTHNESS=80
+
+# Brightness floor and ceiling
+FLOOR=30
+CEIL=100
+
+# Colour temperatures in K
+TEMP_FLOOR=2700
+TEMP_CEIL=6600
+
+# Fraction of RGB value to be considered normally full
+RGB_SCALING=0.9
+
+# Contrast. Does not change.
+CONTRAST=50
+
+# Number of retries for some essential `ddcutil` commands
+# Currently only used for $max
+MAX_RETRIES=5
